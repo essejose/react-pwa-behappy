@@ -1,9 +1,13 @@
-import	React from 'react'
-
+import	React from 'react';
+import Label from '../Label';
 class NovoUsuario extends React.Component	{
-    render(){
+    render(){ 
+
         return	(
             <div className="center">
+                <form className="pure-form	pure-form-stacked">
+                    <Label htmlFor="nome" texto="quem e voce?"/>        
+                </form>
             </div>
         )
     }
