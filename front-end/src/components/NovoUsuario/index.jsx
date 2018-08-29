@@ -1,34 +1,31 @@
 import	React from 'react';
 import  Label from '../Label';
-import	Input	from '../Input'
-import	GenderSelector	from	'../GenderSelector'
+import	Input from '../Input';
+import	GenderSelector	from	'../GenderSelector';
+import	Usuario	from '../../models/Usuario';
+import Button from '../Button';
+
 
 class NovoUsuario extends React.Component	{
 
     constructor(props)	{
         super(props);
         this.state	=	{
-            usuario:	{
-                nome:	'',
-                genero:	''
-            },
+            usuario: new Usuario(),
             validacao:	{
-                nomeInvalido:	false,
+                nomeInvalido:false,
                 generoInvalido:	false
-            }
+            },
+            primeiraVisaoCompleta:	false
         };
     }
 
     atualizarNome(e)	{
         
-        let	usuario	=	this.state.usuario;
-        usuario.nome	=	e.target.value;		
-		//	Este	código	possui	um	problema
-		//	Ele	sobrescreve	os	demais	atributos	de	usuario
+        let usuario = this.state.usuario;
+        usuario.nome = e.target.value;        
         this.setState({
-            usuario:	{
-                nome:	e.target.value 
-            }
+            usuario: usuario
         });
     }
 
@@ -36,9 +33,103 @@ class NovoUsuario extends React.Component	{
         e.preventDefault();
         let	usuario	=	this.state.usuario;
         usuario.genero	=	genero;
-        this.setState({
-                        usuario:	usuario
+        this.setState({ 
+            usuario: usuario
         });
+    }
+
+    validar(e)	{
+        e.preventDefault();
+        let	usuario	= this.state.usuario;												
+        let	validacao =	this.state.validacao;								
+        validacao.nomeInvalido	=!	usuario.validarNome();
+        validacao.generoInvalido	=!	usuario.validarGenero();
+        let	mensagem = '';				
+        let	primeiraVisaoCompleta =	false;
+
+        if	(validacao.nomeInvalido	&&	validacao.generoInvalido)	{
+                        mensagem	=	'Os	campos	nome	e	gênero	estão	inválidos!'
+        }	else if	(validacao.nomeInvalido)	{
+                        mensagem	=	'Seu	nome	está	inválido!'
+        }	else if	(validacao.generoInvalido)	{
+                        mensagem	=	'Selecione	seu	gênero!'
+        }	else	{
+                        primeiraVisaoCompleta	=	true;
+        }
+        if	(!primeiraVisaoCompleta)	{
+                        this.props.erro(mensagem);
+        }								
+        this.setState({
+                        validacao:	validacao,
+                        primeiraVisaoCompleta:	primeiraVisaoCompleta
+        });						
+    }
+
+    renderizarNome(){
+        return	(
+            <section>
+                <Label
+                    htmlFor="nome"
+                    texto="Quem	é	você?"
+                    valorInvalido={this.state.validacao.nomeInvalido}/>																				
+                <Input
+                    id="nome"
+                    placeholder="Digite	seu	nome"
+                    maxLength="40"
+                    readOnly={this.state.primeiraVisaoCompleta}
+                    valorInvalido={this.state.validacao.nomeInvalido}
+                    defaultValue={this.state.usuario.nome}
+                    onChange={this.atualizarNome.bind(this)}/>
+            </section>
+        )
+    }
+
+    renderizarGenero()	{
+        if	(this.state.primeiraVisaoCompleta)	{
+            return	null
+        }else	
+        {
+            return	(
+                <section>
+                    <Label
+                        texto="Seu	gênero:"
+                        valorInvalido={this.state.validacao.generoInvalido}/>
+                    <GenderSelector
+                        valorInvalido={this.state.validacao.generoInvalido}
+                        genero={this.state.usuario.genero}
+                        atualizarGenero={this.atualizarGenero.bind(this)}/>
+                </section>
+            )
+        }
+    }
+
+    renderizarBotoes()	{
+        if	(this.state.primeiraVisaoCompleta)	{
+            return	(
+                <section>
+                    <Button
+                        texto="Voltar"
+                        onClick={e	=>	{ e.preventDefault();
+                                this.setState({	
+                                    primeiraVisaoCompleta:	false
+                                });
+                            }}/>
+                    <Button
+                        principal
+                        texto="Salvar"
+                    />
+                </section>
+            )
+        }else	{
+            return	(
+                <section>
+                    <Button
+                        principal
+                        texto="Próximo"
+                    	onClick={this.validar.bind(this)}/>
+                </section>
+                )
+		}
     }
 
 
@@ -47,27 +138,9 @@ class NovoUsuario extends React.Component	{
         return	(
             <div className="center">
                 <form className="pure-form	pure-form-stacked">
-                    <Label 
-                        htmlFor="nome" 
-                        texto="quem e voce?"
-                        valorInvalido={this.state.nomeInvalido}
-                    />    
-                    <Input
-                        id="nome"
-                        placeholder="Digite seu nome"
-                        maxLength="40"
-                        readOnly={false}
-                        valorInvalido={this.state.nomeInvalido} 
-                        defaultValue={this.state.usuario.nome}
-                        onChange={this.atualizarNome.bind(this)}
-                    /> 
-                    
-                    <GenderSelector
-						valorInvalido={this.state.validacao.generoInvalido}
-						genero={this.state.usuario.genero}
-						atualizarGenero={this.atualizarGenero.bind(this)}
-					/>
-                
+                    {this.renderizarNome()}
+                    {this.renderizarGenero()}
+                    {this.renderizarBotoes()}
                 </form>
             </div>
         )
