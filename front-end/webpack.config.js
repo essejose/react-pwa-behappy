@@ -61,7 +61,8 @@ module.exports = {
     devServer:	{
         publicPath: "/",
         contentBase: "./dist",
-        inline: true
+        headers:	{	"Cache-Control":	"max-age=600"	},
+ 
     }
 
 };
